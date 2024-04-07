@@ -11,7 +11,19 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Chart from "chart.js/auto";
 import backgroundImage from "@/assets/windmills-alternative-energy.jpg"; // Import your background image
-import ChartComponent from "@/components/charts";
+import Barchart from "@/components/Barchart";
+// import { Bar } from "react-chartjs-2";
+import {
+  BarChart,
+  Bar,
+  Rectangle,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const Pwrgen = () => {
   const [formData, setFormData] = useState({
@@ -26,6 +38,9 @@ const Pwrgen = () => {
   const [pressure, setPressure] = useState<any>([]);
   const [temp, setTemp] = useState<any>([]);
   const [wind, setWind] = useState<any>([]);
+  const [pvt, setPvt] = useState<any>([]);
+  const [pvp, setPvp] = useState<any>([]);
+  const [pvw, setPvw] = useState<any>([]);
 
   const handleChange = (e: any) => {
     setFormData({
@@ -82,73 +97,110 @@ const Pwrgen = () => {
         setWind([...w]);
         const pr = res?.data?.map((item: any) => item.pressure);
         setPressure([...pr]);
-        console.log(p, t, w, pr);
+        // console.log(p, t, w, pr);
+        let x: any = [];
+        res?.data?.map((item: any) => {
+          x = [
+            ...x,
+            {
+              temp: item.temperature,
+              power: item.power,
+            },
+          ];
+        });
+
+        let y: any = [];
+        res?.data?.map((item: any) => {
+          y = [
+            ...y,
+            {
+              pressure: item.pressure,
+              power: item.power,
+            },
+          ];
+        });
+
+        let z: any = [];
+
+        res?.data?.map((item: any) => {
+          z = [
+            ...z,
+            {
+              windspeed: item.windSpeed,
+              power: item.power,
+            },
+          ];
+        });
+
+        setPvt(x);
+        setPvp(y);
+        setPvw(z);
       })
       .catch((err) => {
         console.log(err);
       });
   }, []);
 
-  console.log(data);
+  // console.log(data);
 
-  useEffect(() => {
-    if (data?.length === 0) return;
+  // useEffect(() => {
+  //   if (data?.length === 0) return;
 
-    const ctx = document.getElementById(
-      "temperaturePressureChart"
-    ) as HTMLCanvasElement;
+  //   const ctx = document.getElementById(
+  //     "temperaturePressureChart"
+  //   ) as HTMLCanvasElement;
 
-    // const gtx = document.getElementById("pressureChart") as HTMLCanvasElement;
-    const myChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: data?.map((item: any) => item.temperature),
-        datasets: [
-          {
-            label: "Temperature vs power",
-            data: data?.map((item: any) => item.power),
-            backgroundColor: "rgba(54, 162, 235, 0.2)",
-            borderColor: "rgba(54, 162, 235, 1)",
-            borderWidth: 1,
-          },
-        ],
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-          },
-        },
-      },
-    });
+  //   // const gtx = document.getElementById("pressureChart") as HTMLCanvasElement;
+  //   const myChart = new Chart(ctx, {
+  //     type: "bar",
+  //     data: {
+  //       labels: data?.map((item: any) => item.temperature),
+  //       datasets: [
+  //         {
+  //           label: "Temperature vs power",
+  //           data: data?.map((item: any) => item.power),
+  //           backgroundColor: "rgba(54, 162, 235, 0.2)",
+  //           borderColor: "rgba(54, 162, 235, 1)",
+  //           borderWidth: 1,
+  //         },
+  //       ],
+  //     },
+  //     options: {
+  //       scales: {
+  //         y: {
+  //           beginAtZero: true,
+  //         },
+  //       },
+  //     },
+  //   });
 
-    // const pressureChart = new Chart(gtx, {
-    //   type: "bar",
-    //   data: {
-    //     labels: data?.map((item: any) => item.pressure),
-    //     datasets: [
-    //       {
-    //         label: "Temperature vs power",
-    //         data: data?.map((item: any) => item.power),
-    //         backgroundColor: "rgba(54, 162, 235, 0.2)",
-    //         borderColor: "rgba(54, 162, 235, 1)",
-    //         borderWidth: 1,
-    //       },
-    //     ],
-    //   },
-    //   options: {
-    //     scales: {
-    //       y: {
-    //         beginAtZero: true,
-    //       },
-    //     },
-    //   },
-    // });
+  //   // const pressureChart = new Chart(gtx, {
+  //   //   type: "bar",
+  //   //   data: {
+  //   //     labels: data?.map((item: any) => item.pressure),
+  //   //     datasets: [
+  //   //       {
+  //   //         label: "Temperature vs power",
+  //   //         data: data?.map((item: any) => item.power),
+  //   //         backgroundColor: "rgba(54, 162, 235, 0.2)",
+  //   //         borderColor: "rgba(54, 162, 235, 1)",
+  //   //         borderWidth: 1,
+  //   //       },
+  //   //     ],
+  //   //   },
+  //   //   options: {
+  //   //     scales: {
+  //   //       y: {
+  //   //         beginAtZero: true,
+  //   //       },
+  //   //     },
+  //   //   },
+  //   // });
 
-    return () => {
-      myChart.destroy(); // Cleanup chart instance to prevent memory leaks
-    };
-  }, [data, render, setRender]);
+  //   return () => {
+  //     myChart.destroy(); // Cleanup chart instance to prevent memory leaks
+  //   };
+  // }, [data, render, setRender]);
 
   return (
     <div
@@ -245,26 +297,81 @@ const Pwrgen = () => {
         {/* <div className="flex items-center justify-center mt-8">
           <canvas id="temperaturePressureChart" width="50" height="80"></canvas>
         </div> */}
-        <div className="py-12">
-          <div className="max-w-xl mx-auto sm:px-6 lg:px-8">
-            <div className="overflow-hidden bg-white shadow-xl sm:rounded-lg">
-              <div>
-                <canvas
-                  id="temperaturePressureChart"
-                  width="400"
-                  height="400"
-                ></canvas>
-                {/* <ChartComponent
-                  labels={temp}
-                  data={power}
-                  heading="Temp Vs Power"
-                /> */}
+        <div className="flex">
+          <div className="py-12">
+            <div className="max-w-xl mx-auto sm:px-6 lg:px-8">
+              <div className="overflow-hidden bg-white shadow-xl sm:rounded-lg">
+                <div>
+                  <Barchart
+                    xlabel="temp"
+                    title="Temperature vs Power"
+                    data={pvt}
+                  />
+                </div>
               </div>
-              {/* <div>
-                <canvas id="pressureChart" width="400" height="400"></canvas>
-              </div> */}
             </div>
           </div>
+          <div className="py-12">
+            <div className="max-w-xl mx-auto sm:px-6 lg:px-8">
+              <div className="overflow-hidden bg-white shadow-xl sm:rounded-lg">
+                <div>
+                  <Barchart
+                    xlabel="pressure"
+                    title="Pressure vs Power"
+                    data={pvp}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="py-12">
+            <div className="max-w-xl mx-auto sm:px-6 lg:px-8">
+              <div className="overflow-hidden bg-white shadow-xl sm:rounded-lg">
+                <div>
+                  <Barchart
+                    xlabel="windspeed"
+                    title="Wind Speed vs Power"
+                    data={pvw}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <BarChart
+            width={500}
+            height={300}
+            data={data}
+            margin={{
+              top: 5,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey={data} />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar
+              dataKey="pressure"
+              fill="#8884d8"
+              activeBar={<Rectangle fill="pink" stroke="blue" />}
+            />
+            <Bar
+              dataKey="temperature"
+              fill="#8884d8"
+              activeBar={<Rectangle fill="pink" stroke="blue" />}
+            />{" "}
+            <Bar
+              dataKey="windSpeed"
+              fill="#8884d8"
+              activeBar={<Rectangle fill="pink" stroke="blue" />}
+            />
+          </BarChart>
         </div>
       </div>
     </div>
